@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل اوردرات المناديب</title>
+    <!-- Bootstrap CSS CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <!-- FontAwesome للأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light">
+
+<div class="container my-4" style="max-width: 800px;">
+
+    <!-- نموذج تسجيل الموعد -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white text-center">
+            <h4 class="mb-0"><i class="fa-solid fa-truck-ramps"></i> بيانات العملاء </h4>
+        </div>
+        <div class="card-body">
+            <form id="deliveryForm">
+                <div class="row">
+                    <!-- اسم العميل -->
+                    <div class="col-md-6 mb-3">
+                        <label for="clientName" class="form-label">اسم العميل</label>
+                        <input type="text" class="form-control" id="clientName" placeholder="أدخل اسم العميل" required>
+                    </div>
+                    <!-- رقم الهاتف -->
+                    <div class="col-md-6 mb-3">
+                        <label for="clientPhone" class="form-label">رقم الهاتف</label>
+                        <input type="tel" class="form-control" id="clientPhone" placeholder="01xxxxxxxxx" required>
+                    </div>
+                </div>
+
+                <!-- العنوان -->
+                <div class="mb-3">
+                    <label for="clientAddress" class="form-label">العنوان بالتفصيل</label>
+                    <input type="text" class="form-control" id="clientAddress" placeholder="المدينة، الشارع، رقم العقار..." required>
+                </div>
+
+                <div class="row">
+                    <!-- اسم المندوب -->
+                    <div class="col-md-4 mb-3">
+                        <label for="agentName" class="form-label">اسم المندوب</label>
+                        <input type="text" class="form-control" id="agentName" placeholder="اسم المندوب" required>
+                    </div>
+                    <!-- التاريخ -->
+                    <div class="col-md-4 mb-3">
+                        <label for="deliveryDate" class="form-label">تاريخ التوصيل</label>
+                        <input type="date" class="form-control" id="deliveryDate" required>
+                    </div>
+                    <!-- الوقت -->
+                    <div class="col-md-4 mb-3">
+                        <label for="deliveryTime" class="form-label">وقت التوصيل</label>
+                        <input type="time" class="form-control" id="deliveryTime" required>
+                    </div>
+                </div>
+
+                <!-- ملاحظات -->
+                <div class="mb-3">
+                    <label for="notes" class="form-label">ملاحظات إضافية</label>
+                    <textarea class="form-control" id="notes" rows="2" placeholder="تفاصيل الشحنة، شقة رقم..."></textarea>
+                </div>
+
+                <!-- زر الحفظ -->
+                <button type="submit" class="btn btn-success w-100 fw-bold">
+                    <i class="fa-solid fa-floppy-disk"></i> حفظ الموعد
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- جدول عرض المواعيد للمندوبين -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fa-solid fa-list-check"></i> جدول المواعيد المسجلة</h5>
+            <button class="btn btn-sm btn-outline-light" onclick="loadTasks()">
+                <i class="fa-solid fa-rotate-right"></i> تحديث
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 text-center align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>العميل</th>
+                            <th>المندوب</th>
+                            <th>الموعد</th>
+                            <th>العنوان والتفاصيل</th>
+                            <th>إجراءات المندوب</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasksTableBody">
+                        <!-- يتم تحميل البيانات هنا عبر JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- JavaScript للتحكم بالبيانات والتفاعل -->
+<script>
+    // عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        // تعيين تاريخ اليوم كقيمة افتراضية
+        document.getElementById('deliveryDate').valueAsDate = new Date();
+        loadTasks();
+    });
+
+    // حفظ البيانات عند إرسال النموذج
+    document.getElementById('deliveryForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const newTask = {
+            id: Date.now(),
+            clientName: document.getElementById('clientName').value,
+            clientPhone: document.getElementById('clientPhone').value,
+            clientAddress: document.getElementById('clientAddress').value,
+            agentName: document.getElementById('agentName').value,
+            deliveryDate: document.getElementById('deliveryDate').value,
+            deliveryTime: document.getElementById('deliveryTime').value,
+            notes: document.getElementById('notes').value
+        };
+
+        // جلب المواعيد القديمة من LocalStorage أو إنشاء مصفوفة جديدة
+        let tasks = JSON.parse(localStorage.getItem('deliveryTasks')) || [];
+        tasks.push(newTask);
+
+        // حفظ القائمة الجديدة
+        localStorage.setItem('deliveryTasks', JSON.stringify(tasks));
+
+        // إعادة ضبط النموذج وتحديث الجدول
+        document.getElementById('deliveryForm').reset();
+        document.getElementById('deliveryDate').valueAsDate = new Date();
+        alert('تم حفظ الموعد بنجاح!');
+        loadTasks();
+    });
+
+    // دالة عرض البيانات في الجدول
+    function loadTasks() {
+        const tasksTableBody = document.getElementById('tasksTableBody');
+        const tasks = JSON.parse(localStorage.getItem('deliveryTasks')) || [];
+
+        tasksTableBody.innerHTML = '';
+
+        if (tasks.length === 0) {
+            tasksTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-muted py-4">لا توجد مواعيد مسجلة حالياً.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        tasks.forEach(task => {
+            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(task.clientAddress)}`;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <strong>${task.clientName}</strong><br>
+                    <small class="text-muted">${task.clientPhone}</small>
+                </td>
+                <td><span class="badge bg-info text-dark">${task.agentName}</span></td>
+                <td>
+                    <small>${task.deliveryDate}</small><br>
+                    <strong>${task.deliveryTime}</strong>
+                </td>
+                <td class="text-start">
+                    <small><strong>العنوان:</strong> ${task.clientAddress}</small>
+                    ${task.notes ? `<br><small class="text-secondary"><strong>ملاحظات:</strong> ${task.notes}</small>` : ''}
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <!-- زر الاتصال المباشر -->
+                        <a href="tel:${task.clientPhone}" class="btn btn-success" title="اتصال بالعميل">
+                            <i class="fa-solid fa-phone"></i>
+                        </a>
+                    
+                        </a>
+                        <!-- زر الحذف -->
+                        <button class="btn btn-danger" onclick="deleteTask(${task.id})" title="حذف الموعد">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            tasksTableBody.appendChild(row);
+        });
+    }
+
+    // دالة حذف موعد
+    function deleteTask(id) {
+        if (confirm('هل أنت تأكد من حذف هذا الموعد؟')) {
+            let tasks = JSON.parse(localStorage.getItem('deliveryTasks')) || [];
+            tasks = tasks.filter(task => task.id !== id);
+            localStorage.setItem('deliveryTasks', JSON.stringify(tasks));
+            loadTasks();
+        }
+    }
+</script>
+
+</body>
+</html>
